@@ -1,0 +1,8 @@
+DateTime : 8/13/2026 3:36:52 PM
+Message : Value cannot be null. (Parameter 'requestUriString')
+StackTrace :    at System.ArgumentNullException.Throw(String paramName)
+   at System.ArgumentNullException.ThrowIfNull(Object argument, String paramName)
+   at System.Net.WebRequest.Create(String requestUriString)
+   at VerisignGateway.VerisignUtil.GetResponseFromComodo(String strAPIURL, String InputParams, String UserName, String Password)
+   at VerisignGateway.VerisignAPIHelper.ComodoParseCSR(ProductCode enmProductCode, String CSR, ComodoCACredential objComodoCredential)
+   at SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration.ComodoController.CSRInfoPost(CSRInfoPostRequest objModel) in D:\Krunal Solanki\NEW-DEV-2026\SSL-Configuration-Core-API-2026\SSL-Configuration-Core-API-2026\SSL-Configuration-Core-API-2026\Controllers\SSLConfiguration\ComodoController.cs:line 139

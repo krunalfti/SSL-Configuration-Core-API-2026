@@ -1,0 +1,2 @@
+DateTime : 8/18/2026 4:10:43 PM
+ErrorCode: -27, ErrorField: CodeSignOrder, ErrorMessage: Order 3271778298 is not currently Awaiting Authorization/Rejection!

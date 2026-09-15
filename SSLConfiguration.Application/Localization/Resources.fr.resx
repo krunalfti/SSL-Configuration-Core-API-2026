@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Val_EnterCaptcha" xml:space="preserve">
+    <value>Please enter verification code.</value>
+  </data>
+  <data name="Val_InvalidPIN" xml:space="preserve">
+    <value>Code PIN invalide. Veuillez contacter l'assistance.</value>
+  </data>
+  <data name="Val_OrderIsCancelled" xml:space="preserve">
+    <value>Commande annulée.</value>
+  </data>
+  <data name="InvalidDomainNameInCSR" xml:space="preserve">
+    <value>Le nom de domaine est incorrect dans la clé CSR. Ce devrait être le FQDN.</value>
+  </data>
+  <data name="val_CSRWildcard" xml:space="preserve">
+    <value>Vous devez générer le CSR pour *.votredomaine.com.</value>
+  </data>
+</root>

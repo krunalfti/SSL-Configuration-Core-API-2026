@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Val_EnterCaptcha" xml:space="preserve">
+    <value>Please enter verification code.</value>
+  </data>
+  <data name="Val_InvalidPIN" xml:space="preserve">
+    <value>Invalid PIN. Please Contact Support</value>
+  </data>
+  <data name="Val_OrderIsCancelled" xml:space="preserve">
+    <value>Order is cancelled.</value>
+  </data>
+  <data name="InvalidDomainNameInCSR" xml:space="preserve">
+    <value>Domain name is incorrect in CSR key. It should be FQDN.</value>
+  </data>
+  <data name="val_CSRWildcard" xml:space="preserve">
+    <value>You should generate the CSR for *.yourdomain.com.</value>
+  </data>
+  <data name="Val_CSRRequired" xml:space="preserve">
+    <value>Please enter CSR</value>
+  </data>
+  <data name="CSR_Note_Wildcard" xml:space="preserve">
+    <value>You should generate the CSR for *.yourdomain.com</value>
+  </data>
+  <data name="Val_CSRWithWildcardDomainNameNowAllowed" xml:space="preserve">
+    <value>THE COMMON NAME (DOMAIN NAME) MAY NOT CONTAIN A *  IN CSR</value>
+  </data>
+  <data name="Val_DomainNameRequired" xml:space="preserve">
+    <value>Please enter domain name</value>
+  </data>
+  <data name="DV_SANRequired" xml:space="preserve">
+    <value>Please enter SAN Domain Name.</value>
+  </data>
+  <data name="DV_SelectSubDomainType" xml:space="preserve">
+    <value>Please select san domain type</value>
+  </data>
+  <data name="DV_MaxSANAllowed" xml:space="preserve">
+    <value>Maximum SAN allowed is : </value>
+  </data>
+  <data name="DV_WildCardSAN_MaxLabel" xml:space="preserve">
+    <value>Maximum Wildcard SAN allowed is :</value>
+  </data>
+</root>

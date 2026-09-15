@@ -1,0 +1,6 @@
+@SSL_Configuration_Core_API_2026_HostAddress = http://localhost:5046
+
+GET {{SSL_Configuration_Core_API_2026_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

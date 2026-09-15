@@ -1,0 +1,6 @@
+DateTime : 8/14/2026 4:10:01 PM
+Message : Invalid URI: The URI is empty.
+StackTrace :    at System.Uri.CreateThis(String uri, Boolean dontEscape, UriKind uriKind, UriCreationOptions& creationOptions)
+   at System.Uri..ctor(String uriString)
+   at VerisignGateway.AcemeAPIHelper.GetServerUrl(ACMEBaseRequest objACMEBaseRequest)
+   at SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration.ACMEController.ACMEInfo(String pin, String configurationToken) in D:\Krunal Solanki\NEW-DEV-2026\SSL-Configuration-Core-API-2026\SSL-Configuration-Core-API-2026\SSL-Configuration-Core-API-2026\Controllers\SSLConfiguration\ACMEController.cs:line 116

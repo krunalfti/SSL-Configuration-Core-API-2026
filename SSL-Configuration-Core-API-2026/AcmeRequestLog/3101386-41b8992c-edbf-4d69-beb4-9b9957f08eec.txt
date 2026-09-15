@@ -1,0 +1,12 @@
+---------------------------------------------------------------------------------------------------
+DateTime : 8/14/2026 4:06:13 PM
+IP Address : ::1
+API Url: 
+Request Object: {"loginName":"xxxxx","loginPassword":"xxxxx","action":"LISTSERVERS","includeAdditionalAccounts":null,"EABKeyID":null}
+Message : LISTSERVERS
+---------------------------------------------------------------------------------------------------
+DateTime : 8/14/2026 4:10:02 PM
+IP Address : ::1
+API Url: 
+Response Object: 
+Message : Failed to retrieve ACME server URL:Invalid URI: The URI is empty.
