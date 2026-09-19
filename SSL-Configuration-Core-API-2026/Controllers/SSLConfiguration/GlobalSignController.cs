@@ -661,6 +661,7 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 string[] addDomainList = additionalDomains.TrimEnd(',').TrimEnd('\n').Split('\n');
 
                 int MaxSAN = BLGeneral.GetAddDomain(PF_RequestObject.StoreOrderDetail!.StoreOrderId, PF_RequestObject.StoreOrderDetail.ProductId);
+                response.MaxSAN = MaxSAN;
                 if (addDomainList.Count() > MaxSAN)
                 {
                     if (PF_RequestObject.ProductDetail.IsWildcardMultiDomain)
@@ -899,7 +900,7 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 string[] addDomainList = WildcardSAN.Trim().Split('\n');
 
                 int MaxWildcardSAN = BLGeneral.GetWildcardSANCount(PF_RequestObject.StoreOrderDetail!.StoreOrderId, PF_RequestObject.StoreOrderDetail.ProductId);
-
+                response.MaxWildcardSAN = MaxWildcardSAN;
                 if (addDomainList.Count() > MaxWildcardSAN)
                 {
                     response.IsSuccess = false;

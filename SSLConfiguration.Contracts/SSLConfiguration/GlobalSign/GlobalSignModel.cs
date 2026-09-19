@@ -430,6 +430,7 @@ namespace SSLConfiguration.Contracts.SSLConfiguration.GlobalSign
         public string? AdditionalDomains { get; set; }
         public List<string>? AdditionalDomainList { get; set; }
         public Dictionary<string, string>? AdditionalDomainsList { get; set; }
+        public int? MaxSAN { get; set; }
     }
 
     /// <summary>
@@ -451,6 +452,7 @@ namespace SSLConfiguration.Contracts.SSLConfiguration.GlobalSign
         public bool IsSuccess { get; set; }
         public string? Message { get; set; }
         public string? configurationToken { get; set; }
+        public int? MaxWildcardSAN { get; set; }
         public List<string>? WidlcardSANDomainList { get; set; }
     }
 
