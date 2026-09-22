@@ -1777,6 +1777,7 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                     }
 
                     ValidateAndParseCSRResponse objRes = BLGeneral.PasreCSR(objModel.CSR.Trim());
+                    response.objCSRResJson = JsonConvert.SerializeObject(objRes);
                     if (objRes.error == null || objRes.error.ErrorCode == 0)
                     {
                         if ((objRes.DomainName ?? string.Empty).ToLower().StartsWith("*."))
