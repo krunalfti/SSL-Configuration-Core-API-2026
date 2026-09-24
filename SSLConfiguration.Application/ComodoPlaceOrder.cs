@@ -115,7 +115,9 @@ namespace SSLConfiguration.Application
                     (VerisignGateway.ProductCode)objPFRequest.StoreOrderDetail.ProductId);
 
                 ComodoOrderRequest objComodoOrderRequest = BLComodo.GetComodoOrderRequestForCodeSign(objPFRequest);
-
+                objComodoOrderRequest.JurisdictionCity = string.IsNullOrEmpty(objPFRequest.ComodoOrderRequest.ComodoCodeSignOrderInfo.JurictionCity) ? string.Empty : objPFRequest.ComodoOrderRequest.ComodoCodeSignOrderInfo.JurictionCity;
+                objComodoOrderRequest.JurisdictionCountry = string.IsNullOrEmpty(objPFRequest.ComodoOrderRequest.ComodoCodeSignOrderInfo.JurictionCountryName) ? string.Empty : objPFRequest.ComodoOrderRequest.ComodoCodeSignOrderInfo.JurictionCountryName;
+                objComodoOrderRequest.JurisdictionState = string.IsNullOrEmpty(objPFRequest.ComodoOrderRequest.ComodoCodeSignOrderInfo.jurictionState) ? string.Empty : objPFRequest.ComodoOrderRequest.ComodoCodeSignOrderInfo.jurictionState;
                 OrderResponse? objComodoOrderResponse;
                 try
                 {
