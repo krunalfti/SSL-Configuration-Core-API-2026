@@ -1703,12 +1703,12 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
         #region VMC Info
 
         [HttpGet("VMCInfo")]
-        public IActionResult VMCInfo_Get([FromQuery] string? configurationToken = null)
+        public IActionResult VMCInfo_Get([FromQuery] string? pin = null, [FromQuery] string? configurationToken = null)
         {
             var response = new VMCInfoGetResponse();
             try
             {
-                var resolved = _authenticationService.ResolveDraft(configurationToken, null);
+                var resolved = _authenticationService.ResolveDraft(configurationToken, pin);
                 if (!resolved.ok || resolved.request == null || string.IsNullOrEmpty(resolved.token))
                 {
                     response.IsSuccess = false;
