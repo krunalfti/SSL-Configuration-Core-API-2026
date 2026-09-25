@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SSLConfiguration.Application;
 using SSLConfiguration.Application.Services;
 using SSLConfiguration.Contracts.SSLConfiguration.Comodo;
@@ -7,10 +8,10 @@ using SSLConfiguration.Contracts.SSLConfiguration.Digicert;
 using SSLConfiguration.Contracts.SSLConfiguration.GlobalSign;
 using SSLConfiguration.Infrastructure;
 using SSLConfiguration.Infrastructure.Persistence;
+using System.IO;
 using System.Text;
 using VerisignGateway;
 using VerisignGateway.GS_MarkService;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using ComodoCodeSignContactInfoDto = SSLConfiguration.Contracts.SSLConfiguration.Comodo.CodeSignContactInfoDto;
 using ComodoCodeSignContactInfoGetResponse = SSLConfiguration.Contracts.SSLConfiguration.Comodo.CodeSignContactInfoGetResponse;
 using ComodoCodeSignCsrInfoDto = SSLConfiguration.Contracts.SSLConfiguration.Comodo.CodeSignCsrInfoDto;
@@ -21,10 +22,11 @@ using ComodoOrganizationInfoGetResponse = SSLConfiguration.Contracts.SSLConfigur
 using ComodoSummaryGetResponse = SSLConfiguration.Contracts.SSLConfiguration.Comodo.SummaryGetResponse;
 using ComodoSummaryPostRequest = SSLConfiguration.Contracts.SSLConfiguration.Comodo.SummaryPostRequest;
 using ComodoSummaryPostResponse = SSLConfiguration.Contracts.SSLConfiguration.Comodo.SummaryPostResponse;
+using DigicertSelectListItemDto = SSLConfiguration.Contracts.SSLConfiguration.Digicert.SelectListItemDto;
+using GlobalSignSelectListItemDto = SSLConfiguration.Contracts.SSLConfiguration.GlobalSign.SelectListItemDto;
 using GlobalSignSummaryPostRequest = SSLConfiguration.Contracts.SSLConfiguration.GlobalSign.SummaryPostRequest;
 using GlobalSignSummaryPostResponse = SSLConfiguration.Contracts.SSLConfiguration.GlobalSign.SummaryPostResponse;
-using GlobalSignSelectListItemDto = SSLConfiguration.Contracts.SSLConfiguration.GlobalSign.SelectListItemDto;
-using DigicertSelectListItemDto = SSLConfiguration.Contracts.SSLConfiguration.Digicert.SelectListItemDto;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
 {
     [ClientAuthorize]
@@ -3458,26 +3460,31 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
         {
             string path = Path.Combine(LogWriter.ContentRoot, "Scripts", "TrademarksOffice", "trademarkscountrywiseoffice.json");
             var json = System.IO.File.ReadAllText(path);
-            var rawItems = JsonSerializer.Deserialize<List<TrademarkCountryJsonItem>>(json) ?? new List<TrademarkCountryJsonItem>();
+            var jArray = JArray.Parse(json);
             var list = new List<TrademarkCountryData>();
-
-            foreach (var item in rawItems)
+            foreach (var item in jArray)
             {
+                string country = item["Country"]?.ToString();
+                var officeObj = item["Office"];
+                var officeName = officeObj?["Name"]?.ToString();
                 var offices = new List<TrademarkOfficeData>();
-                string? officeName = item.Office?.Name;
                 if (!string.IsNullOrEmpty(officeName))
                 {
-                    foreach (var name in officeName.Split('|'))
-                        offices.Add(new TrademarkOfficeData { Name = name.Trim() });
+                    var officeNames = officeName.Split('|');
+                    foreach (var name in officeNames)
+                    {
+                        offices.Add(new TrademarkOfficeData
+                        {
+                            Name = name.Trim()
+                        });
+                    }
                 }
-
                 list.Add(new TrademarkCountryData
                 {
-                    Country = item.Country,
+                    Country = country,
                     Office = offices
                 });
             }
-
             return list;
         }
 
