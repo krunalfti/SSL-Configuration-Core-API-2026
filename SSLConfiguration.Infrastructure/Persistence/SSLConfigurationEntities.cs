@@ -19,6 +19,7 @@ namespace SSLConfiguration.Infrastructure.Persistence
         public virtual DbSet<ApiClient> ApiClients { get; set; }
         public virtual DbSet<CACredential> CACredentials { get; set; }
         public virtual DbSet<StoreOrder> StoreOrders { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<GlobalSignOrderDetail> GlobalSignOrderDetails { get; set; }
         public virtual DbSet<AdditionalDomain> AdditionalDomains { get; set; }
         public virtual DbSet<CSRDetail> CSRDetails { get; set; }
@@ -172,6 +173,11 @@ namespace SSLConfiguration.Infrastructure.Persistence
             {
                 e.ToTable("SectigoRefundPaymentStatus");
                 e.HasKey(x => x.SectigoRefundPaymentId);
+            });
+            modelBuilder.Entity<Product>(e =>
+            {
+                e.ToTable("Product");
+                e.HasKey(x => x.ProductId);
             });
         }
     }

@@ -1,6 +1,4 @@
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Pkcs;
@@ -11,6 +9,9 @@ using Org.BouncyCastle.Security;
 using SSLConfiguration.Infrastructure;
 using SSLConfiguration.Infrastructure.DataAccess;
 using SSLConfiguration.Infrastructure.Persistence;
+using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 using VerisignGateway;
 
 namespace SSLConfiguration.Application
@@ -612,6 +613,17 @@ namespace SSLConfiguration.Application
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Get product details for acme renew api
+        /// </summary>
+        public static Product GetProductDetail(SSLConfigurationEntities dbContext, int productId)
+        {
+            var tblProduct = StoreOrderDataAccess.GetByProductId(dbContext, productId);
+            if (tblProduct != null)
+                return tblProduct;
+            return null;
         }
     }
 
