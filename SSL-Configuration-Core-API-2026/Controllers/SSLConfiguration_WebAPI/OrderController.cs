@@ -16,12 +16,12 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration_WebAPI
 
             try
             {
-                //if (!this.ValidateAPIRequest(request))
-                //{
-                //    response.ErrorDetail = BaseError;
-                //    response.StatusCode = -1;
-                //    return response;
-                //}
+                if (!this.ValidateAPIRequest(request))
+                {
+                    response.ErrorDetail = BaseError;
+                    response.StatusCode = -1;
+                    return response;
+                }
 
 
                 response = BLStoreOrder.SaveStoreOrderDetails(request);

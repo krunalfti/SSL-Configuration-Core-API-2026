@@ -113,6 +113,60 @@ namespace SSLConfiguration.Application
                     if (serverResponse.success)
                     {
                         response = JsonSerializer.Serialize(serverResponse);
+                        foreach (var storeOrderDetail in saveStoreOrderDetailRequest.StoreOrderDetails)
+                        {
+
+                            var storeOrder = StoreOrderDataAccess.GetBySSLApiLinkIdAndStoreId(storeOrderDetail.SSLApiLinkId, saveStoreOrderDetailRequest.StoreId);
+
+                            StoreOrder objStoreOrder = new StoreOrder()
+                            {
+                                StoreId = saveStoreOrderDetailRequest.StoreId,
+                                SSLApiLinkId = storeOrderDetail.SSLApiLinkId,
+                                ApiOrderNo = "AbcdNew001",
+                                CompanyName = storeOrderDetail.CompanyName,
+                                CreatedDate = DateTime.Now,
+                                CredentialCode = storeOrderDetail.CredentialCode,
+                                IsActive = true,
+                                IsCancel = false,
+                                IsUsed = false,
+                                MinSAN = storeOrderDetail.MinSan,
+                                Pin = Guid.NewGuid().ToString(),
+                                ProductId = storeOrderDetail.ProductId,
+                                ProductName = storeOrderDetail.ProductName,
+                                San = storeOrderDetail.San,
+                                SpecialNote = string.Empty,
+                                UpdatedDate = DateTime.Now,
+                                ValidTillDate = DateTime.Now.AddMonths(13),
+                                LinkExpiredDate = DateTime.Now.AddMonths(13),
+                                Year = storeOrderDetail.Year,
+                                IsMultiDomain = storeOrderDetail.IsMultiDomain,
+                                IsLock = false,
+                                WildcardSAN = storeOrderDetail.WildcardSAN,
+                                IsSubscription = storeOrderDetail.IsSubscription,
+                                IsCAMYP = storeOrderDetail.IsCAMYP,
+                                IsStoreMYP = storeOrderDetail.IsStoreMYP,
+                                SubscriptionYear = storeOrderDetail.SubscriptionYear,
+                                CAOrderValidFrom = storeOrderDetail.CAOrderValidFrom,
+                                CAOrderValidTo = storeOrderDetail.CAOrderValidTo,
+                                CAOrderValidity = storeOrderDetail.CAOrderValidity,
+                                CodeSignProvisioningMethod = storeOrderDetail.CodeSignProvisioningMethod,
+                                CodeSignShippingCode = storeOrderDetail.CodeSignShippingCode,
+                                //StoreOrderValidFrom = DateTime.Now,
+                                //StoreOrderValidTo = DateTime.Now.AddYears(storeOrderDetail.SubscriptionYear ?? 1),
+                                RemainingValidity = storeOrderDetail.RemainingValidity
+                            };
+
+                            dbContext.StoreOrders.Add(objStoreOrder);
+                            dbContext.SaveChanges();
+                            // Get latest StoreOrder and update StoreOrderId
+                            // in AcemeCertificateDetails and AdditionalDomains
+                            int storeOrderId = storeOrder.StoreOrderId;
+                            UpdateStoreOrderIdInRelatedTables(dbContext, storeOrderDetail.SSLApiLinkId, saveStoreOrderDetailRequest.StoreId, storeOrderId);
+                            // add sslapiLinkId & Pin for response
+                            sslConfiguratinLinks.Add(objStoreOrder.SSLApiLinkId, objStoreOrder.Pin);
+
+                            UpdateStoreOrderProductDetails(dbContext, objStoreOrder.StoreOrderId); // Update StoreOrder - Cofiguration Settings
+                        }
                     }
                     else
                     {
@@ -124,61 +178,7 @@ namespace SSLConfiguration.Application
                 catch (Exception ex)
                 {
                     
-                }
-                foreach (var storeOrderDetail in saveStoreOrderDetailRequest.StoreOrderDetails)
-                {
-                
-                    var storeOrder = StoreOrderDataAccess.GetBySSLApiLinkIdAndStoreId(storeOrderDetail.SSLApiLinkId, saveStoreOrderDetailRequest.StoreId);
-
-                    StoreOrder objStoreOrder = new StoreOrder()
-                    {
-                        StoreId = saveStoreOrderDetailRequest.StoreId,
-                        SSLApiLinkId = storeOrderDetail.SSLApiLinkId,
-                        ApiOrderNo = "AbcdNew001",
-                        CompanyName = storeOrderDetail.CompanyName,
-                        CreatedDate = DateTime.Now,
-                        CredentialCode = storeOrderDetail.CredentialCode,
-                        IsActive = true,
-                        IsCancel = false,
-                        IsUsed = false,
-                        MinSAN = storeOrderDetail.MinSan,
-                        Pin = Guid.NewGuid().ToString(),
-                        ProductId = storeOrderDetail.ProductId,
-                        ProductName = storeOrderDetail.ProductName,
-                        San = storeOrderDetail.San,
-                        SpecialNote = string.Empty,
-                        UpdatedDate = DateTime.Now,
-                        ValidTillDate = DateTime.Now.AddMonths(13),
-                        LinkExpiredDate = DateTime.Now.AddMonths(13),
-                        Year = storeOrderDetail.Year,
-                        IsMultiDomain = storeOrderDetail.IsMultiDomain,
-                        IsLock = false,
-                        WildcardSAN = storeOrderDetail.WildcardSAN,
-                        IsSubscription = storeOrderDetail.IsSubscription,
-                        IsCAMYP = storeOrderDetail.IsCAMYP,
-                        IsStoreMYP = storeOrderDetail.IsStoreMYP,
-                        SubscriptionYear = storeOrderDetail.SubscriptionYear,
-                        CAOrderValidFrom = storeOrderDetail.CAOrderValidFrom,
-                        CAOrderValidTo = storeOrderDetail.CAOrderValidTo,
-                        CAOrderValidity = storeOrderDetail.CAOrderValidity,
-                        CodeSignProvisioningMethod = storeOrderDetail.CodeSignProvisioningMethod,
-                        CodeSignShippingCode = storeOrderDetail.CodeSignShippingCode,
-                        //StoreOrderValidFrom = DateTime.Now,
-                        //StoreOrderValidTo = DateTime.Now.AddYears(storeOrderDetail.SubscriptionYear ?? 1),
-                        RemainingValidity = storeOrderDetail.RemainingValidity
-                    };
-
-                    dbContext.StoreOrders.Add(objStoreOrder);
-                    dbContext.SaveChanges();
-                    // Get latest StoreOrder and update StoreOrderId
-                    // in AcemeCertificateDetails and AdditionalDomains
-                    int storeOrderId = storeOrder.StoreOrderId;
-                    UpdateStoreOrderIdInRelatedTables(dbContext, storeOrderDetail.SSLApiLinkId, saveStoreOrderDetailRequest.StoreId , storeOrderId);
-                    // add sslapiLinkId & Pin for response
-                    sslConfiguratinLinks.Add(objStoreOrder.SSLApiLinkId, objStoreOrder.Pin);
-
-                    UpdateStoreOrderProductDetails(dbContext, objStoreOrder.StoreOrderId); // Update StoreOrder - Cofiguration Settings
-                }               
+                }                               
                 transaction.Commit();
                 saveStoreOrderDetailResponse.ConfigurationPinDetails = sslConfiguratinLinks;
                 
