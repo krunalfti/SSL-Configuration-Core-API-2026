@@ -76,4 +76,11 @@ namespace SSLConfiguration.Contracts.SSLConfiguration_WebAPI
         public string ErrorField;
         public string ErrorMessage;
     }
+    public class SaveStoreOrderResponse
+    {
+        public bool Success { get; set; }
+        public int StoreOrderId { get; set; }
+        public int SSLApiLinkId { get; set; }
+        public string Pin { get; set; }
+    }
 }

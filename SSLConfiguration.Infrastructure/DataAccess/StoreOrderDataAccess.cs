@@ -1,5 +1,8 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using SSLConfiguration.Contracts.SSLConfiguration_WebAPI;
 using SSLConfiguration.Infrastructure.Persistence;
+using System.Data;
 
 namespace SSLConfiguration.Infrastructure.DataAccess
 {
@@ -45,38 +48,80 @@ namespace SSLConfiguration.Infrastructure.DataAccess
             storeOrder.IsUsed = status;
             storeOrder.UpdatedDate = DateTime.Now;
             Update(storeOrder);
-        }
-        public static StoreOrder? GetBySSLApiLinkIdAndStoreId(int SSLApiLinkId,int StoreId)
+        }       
+        #region Renew Acme Product
+        public static SaveStoreOrderResponse? RenewAcmeStoreOrder(SSLConfigurationEntities dbContext,int StoreId, string ApiOrderNo, StoreOrderDetail storeOrderDetail)
         {
-            using (var dbContext = new SSLConfigurationEntities())
+            var parameters = new[]
             {
-                return dbContext.StoreOrders.FirstOrDefault(g => g.SSLApiLinkId == SSLApiLinkId && g.StoreId == StoreId);
-            }
+                new SqlParameter("@StoreId", StoreId),
+                new SqlParameter("@ApiOrderNo", ApiOrderNo),
+
+                new SqlParameter("@SSLApiLinkId", storeOrderDetail.SSLApiLinkId),
+                new SqlParameter("@ProductId", storeOrderDetail.ProductId),
+                new SqlParameter("@Year", storeOrderDetail.Year),
+                new SqlParameter("@San", storeOrderDetail.San),
+                new SqlParameter("@MinSan", storeOrderDetail.MinSan),
+                new SqlParameter("@ProductName",
+                    (object?)storeOrderDetail.ProductName ?? DBNull.Value),
+                new SqlParameter("@CompanyName",
+                    (object?)storeOrderDetail.CompanyName ?? DBNull.Value),
+                new SqlParameter("@CredentialCode",
+                    (object?)storeOrderDetail.CredentialCode ?? DBNull.Value),
+                new SqlParameter("@IsMultiDomain", storeOrderDetail.IsMultiDomain),
+                new SqlParameter("@WildcardSAN", storeOrderDetail.WildcardSAN),
+                new SqlParameter("@IsSubscription", storeOrderDetail.IsSubscription),
+
+                new SqlParameter("@IsCAMYP",
+                    (object?)storeOrderDetail.IsCAMYP ?? DBNull.Value),
+                new SqlParameter("@CAOrderValidity",
+                    (object?)storeOrderDetail.CAOrderValidity ?? DBNull.Value),
+                new SqlParameter("@CAOrderValidFrom",
+                    (object?)storeOrderDetail.CAOrderValidFrom ?? DBNull.Value),
+                new SqlParameter("@CAOrderValidTo",
+                    (object?)storeOrderDetail.CAOrderValidTo ?? DBNull.Value),
+                new SqlParameter("@CodeSignProvisioningMethod",
+                    (object?)storeOrderDetail.CodeSignProvisioningMethod ?? DBNull.Value),
+                new SqlParameter("@CodeSignShippingCode",
+                    (object?)storeOrderDetail.CodeSignShippingCode ?? DBNull.Value),
+                new SqlParameter("@RemainingValidity",
+                    storeOrderDetail.RemainingValidity),
+                new SqlParameter("@IsStoreMYP",
+                    (object?)storeOrderDetail.IsStoreMYP ?? DBNull.Value),
+                new SqlParameter("@SubscriptionYear",
+                    (object?)storeOrderDetail.SubscriptionYear ?? DBNull.Value),
+                new SqlParameter("@SpecialNote",
+                    (object?)storeOrderDetail.SpecialNote ?? DBNull.Value)
+            };
+
+            var result = dbContext.Database.SqlQueryRaw<SaveStoreOrderResponse>(@"EXEC dbo.SaveStoreOrderDetailsForRenew
+                @StoreId,
+                @ApiOrderNo,
+                @SSLApiLinkId,
+                @ProductId,
+                @Year,
+                @San,
+                @MinSan,
+                @ProductName,
+                @CompanyName,
+                @CredentialCode,
+                @IsMultiDomain,
+                @WildcardSAN,
+                @IsSubscription,
+                @IsCAMYP,
+                @CAOrderValidity,
+                @CAOrderValidFrom,
+                @CAOrderValidTo,
+                @CodeSignProvisioningMethod,
+                @CodeSignShippingCode,
+                @RemainingValidity,
+                @IsStoreMYP,
+                @SubscriptionYear,
+                @SpecialNote",
+                    parameters).AsEnumerable().FirstOrDefault();
+
+            return result;
         }
-        public static StoreOrder? GetBySSLApiLinkIdAndStoreIdLatest(SSLConfigurationEntities dbContext, int SSLApiLinkId, int StoreId)
-        {
-             return dbContext.StoreOrders.Where(x => x.SSLApiLinkId == SSLApiLinkId && x.StoreId == StoreId).OrderByDescending(x => x.StoreOrderId).FirstOrDefault();            
-        }
-        public static Product? GetByProductId(SSLConfigurationEntities dbContext, int productId)
-        {
-            return dbContext.Products.SingleOrDefault(x => x.ProductId == productId);
-        }
-        public static StoreOrder? GetByStoreId(SSLConfigurationEntities dbContext, int storeOrderId)
-        {
-            return dbContext.StoreOrders.SingleOrDefault(x => x.StoreOrderId == storeOrderId);
-        }
-        public static void UpdateStoreOrderRenew(SSLConfigurationEntities dbContext,StoreOrder entity)
-        {
-            dbContext.StoreOrders.Update(entity);
-            dbContext.SaveChanges();            
-        }
-        public static List<AcemeCertificateDetail>? GetAcemeCertificateDetails(SSLConfigurationEntities dbContext,int storeOrderId)
-        {
-            return dbContext.AcemeCertificateDetails.Where(x => x.StoreOrderId == storeOrderId).ToList();
-        }
-        public static List<AdditionalDomain>? GetAdditionalDomains(SSLConfigurationEntities dbContext, int storeOrderId)
-        {
-            return dbContext.AdditionalDomains.Where(x => x.StoreOrderId == storeOrderId).ToList();
-        }        
+        #endregion
     }
 }

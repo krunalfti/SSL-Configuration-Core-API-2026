@@ -614,17 +614,7 @@ namespace SSLConfiguration.Application
                 return false;
             }
         }
-
-        /// <summary>
-        /// Get product details for acme renew api
-        /// </summary>
-        public static Product GetProductDetail(SSLConfigurationEntities dbContext, int productId)
-        {
-            var tblProduct = StoreOrderDataAccess.GetByProductId(dbContext, productId);
-            if (tblProduct != null)
-                return tblProduct;
-            return null;
-        }
+       
     }
 
     /// <summary>
