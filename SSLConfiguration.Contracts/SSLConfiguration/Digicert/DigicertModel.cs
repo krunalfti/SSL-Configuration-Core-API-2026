@@ -143,7 +143,8 @@ namespace SSLConfiguration.Contracts.SSLConfiguration.Digicert
         public string? configurationToken { get; set; }
         public string? DomainName { get; set; }
         public string? Logo { get; set; }
-        public IFormFile File { get; set; }
+        public string? FileBase64 { get; set; }
+        public string? FileName { get; set; }
         public bool EnableHosting { get; set; }
         public string? MarkType { get; set; }
         public string? RegistrationNumber { get; set; }
@@ -337,7 +338,9 @@ namespace SSLConfiguration.Contracts.SSLConfiguration.Digicert
         public bool IsLogoExists { get; set; }
         /// <summary>SVG logo content (UTF-8 text) or base64-encoded SVG.</summary>
         public string? strLogo { get; set; }
-        public IFormFile? File { get; set; }
+        // File information sent through JSON
+        public string? FileBase64 { get; set; }
+        public string? FileName { get; set; }
         public DateTime? TrademarkExpiryDate { get; set; }
         public string? TrademarkIdentifier { get; set; }
         public string? CountryName { get; set; }

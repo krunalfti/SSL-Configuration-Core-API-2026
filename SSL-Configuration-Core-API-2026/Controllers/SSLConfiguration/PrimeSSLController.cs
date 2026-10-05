@@ -1732,7 +1732,8 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 if (vmc != null)
                 {
                     response.DomainName = vmc.DomainName;
-                    response.File = vmc.File;
+                    response.FileBase64 = vmc.FileBase64;
+                    response.FileName = vmc.FileName;
                     response.Logo = !string.IsNullOrEmpty(vmc.strLogo) ? vmc.strLogo : vmc.Logo;
                     response.EnableHosting = vmc.EnableHosting;
                     response.MarkType = vmc.MarkType;
@@ -1780,25 +1781,52 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 PF_Request PF_RequestObject = EnsureGlobalSignDraft(resolved.request, resolved.token);
                 response.configurationToken = resolved.token;
 
-                string svgText = string.Empty;               
-                if (string.IsNullOrWhiteSpace(svgText))
+                string svgText = string.Empty;
+
+                if (string.IsNullOrWhiteSpace(objModel?.FileBase64))
                 {
                     response.IsSuccess = false;
                     response.Msg = "Please upload logo file(.svg).";
                     return Ok(response);
                 }
 
-                string fileName = objModel?.File?.FileName
-                    ?? PF_RequestObject.GlobalSignOrderRequest?.VMCCertificateDetail?.File?.FileName
-                    ?? "logo.svg";
-                if (Path.GetExtension(fileName).ToLower() != ".svg")
+                byte[] fileBytes;
+
+                try
+                {
+                    fileBytes = Convert.FromBase64String(objModel.FileBase64);
+                }
+                catch (FormatException)
+                {
+                    response.IsSuccess = false;
+                    response.Msg = "Invalid logo file.";
+                    return Ok(response);
+                }
+
+                if (fileBytes.Length == 0)
+                {
+                    response.IsSuccess = false;
+                    response.Msg = "Please upload logo file(.svg).";
+                    return Ok(response);
+                }
+
+                string fileName = string.IsNullOrWhiteSpace(objModel.FileName)
+                    ? "logo.svg"
+                    : objModel.FileName;
+
+                if (!string.Equals(
+                        Path.GetExtension(fileName),
+                        ".svg",
+                        StringComparison.OrdinalIgnoreCase))
                 {
                     response.IsSuccess = false;
                     response.Msg = "The logo file must be in the SVG format.";
                     return Ok(response);
                 }
 
-                string base64Logo = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svgText));
+                svgText = System.Text.Encoding.UTF8.GetString(fileBytes);
+
+                string base64Logo = objModel.FileBase64;
                 ProductBase objProd = VerisignUtil.GetGSProductObject(VerisignGateway.ProductCode.PrimeSSLCommonMarkCertificate);
                 QbV1ValidateLogoRequest validateLogoRequest = new QbV1ValidateLogoRequest
                 {
@@ -1864,13 +1892,14 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                     Logo = objModel.Logo,
                     EnableHosting = true,
                     MarkType = objModel.MarkType,
-                    File = objModel.File,
+                    FileBase64 = objModel.FileBase64,
+                    FileName = objModel.FileName,
                     strLogo = svgText,
                     IsLogoExists = true,
                     MarkTypeData = new VmcMarkTypeData
                     {
                         RegistrationNumber = objModel.RegistrationNumber,
-                        CountryCode = objModel.RegistrationNumber
+                        CountryCode = objModel.CountryCode
                     }
                 };
 
@@ -2670,9 +2699,9 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 {
                     try
                     {
-                        string ext = string.IsNullOrWhiteSpace(PF_RequestObject.GlobalSignOrderRequest.VMCCertificateDetail.File.FileName)
+                        string ext = string.IsNullOrWhiteSpace(PF_RequestObject.GlobalSignOrderRequest.VMCCertificateDetail.FileName)
                             ? ".svg"
-                            : Path.GetExtension(PF_RequestObject.GlobalSignOrderRequest.VMCCertificateDetail.File.FileName);
+                            : Path.GetExtension(PF_RequestObject.GlobalSignOrderRequest.VMCCertificateDetail.FileName);
                         if (string.IsNullOrWhiteSpace(ext))
                             ext = ".svg";
 

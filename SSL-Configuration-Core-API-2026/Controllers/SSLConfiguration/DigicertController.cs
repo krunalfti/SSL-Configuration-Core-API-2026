@@ -2099,7 +2099,8 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 response.IsSuccess = true;
                 response.configurationToken = resolved.token;
                 response.DomainName = vmc?.DomainName;
-                response.File = vmc?.File;
+                response.FileBase64 = vmc?.FileBase64;
+                response.FileName = vmc?.FileName;
                 response.Logo = vmc?.Logo;
                 response.EnableHosting = vmc?.EnableHosting ?? false;
                 response.MarkType = vmc?.MarkType;
@@ -2148,35 +2149,71 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 string strLogo = string.Empty;
                 if (objModel.IsLogoExists)
                 {
-                    if (string.IsNullOrWhiteSpace(objModel.strLogo))
+                    if (string.IsNullOrWhiteSpace(objModel.FileBase64))
                     {
                         response.IsSuccess = false;
                         response.Msg = "Please upload logo file(.svg).";
                         return Ok(response);
                     }
 
-                    strLogo = objModel.strLogo.Trim();
-                    if (strLogo.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                    {
-                        int comma = strLogo.IndexOf(',');
-                        if (comma > 0)
-                            strLogo = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(strLogo[(comma + 1)..]));
-                    }
-                    else if (!strLogo.Contains('<') && !strLogo.Contains("svg", StringComparison.OrdinalIgnoreCase))
-                    {
-                        try { strLogo = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(strLogo)); }
-                        catch { /* already plain SVG text */ }
-                    }
+                    byte[] fileBytes;
 
-                    strLogo = strLogo.Replace(Environment.NewLine, "");
-
-                    DigicertErrorDetails objLogoResponse = DigicertAPIHelper.ValidateVMCProductLogo(strLogo);
-                    if (objLogoResponse != null && objLogoResponse.StatusCode < 0)
+                    try
                     {
-                        LogWriter.LogCARequestResponseObjectToDB(resolved.request.StoreOrderDetail?.Pin, objLogoResponse.CARequestObject, objLogoResponse.ToString() ?? string.Empty, "VMCInfo");
+                        fileBytes = Convert.FromBase64String(objModel.FileBase64);
+                    }
+                    catch (FormatException)
+                    {
                         response.IsSuccess = false;
-                        response.Msg = "Invalid Logo Format. The logo you uploaded is not in a valid SVG format or is not supported by VMC.";
+                        response.Msg = "Invalid logo file.";
+                        return Ok(response);
+                    }
+
+                    if (fileBytes.Length == 0)
+                    {
+                        response.IsSuccess = false;
+                        response.Msg = "Please upload logo file(.svg).";
+                        return Ok(response);
+                    }
+
+                    string fileName = string.IsNullOrWhiteSpace(objModel.FileName)
+                        ? "logo.svg"
+                        : objModel.FileName;
+
+                    if (!string.Equals(
+                            Path.GetExtension(fileName),
+                            ".svg",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        response.IsSuccess = false;
+                        response.Msg = "The logo file must be in the SVG format.";
+                        return Ok(response);
+                    }
+
+                    strLogo = System.Text.Encoding.UTF8.GetString(fileBytes);
+
+                    strLogo = strLogo.Replace(
+                        Environment.NewLine,
+                        string.Empty);
+
+                    DigicertErrorDetails objLogoResponse =
+                        DigicertAPIHelper.ValidateVMCProductLogo(strLogo);
+
+                    if (objLogoResponse != null &&
+                        objLogoResponse.StatusCode < 0)
+                    {
+                        LogWriter.LogCARequestResponseObjectToDB(
+                            resolved.request.StoreOrderDetail?.Pin,
+                            objLogoResponse.CARequestObject,
+                            objLogoResponse.ToString() ?? string.Empty,
+                            "VMCInfo");
+
+                        response.IsSuccess = false;
+                        response.Msg =
+                            "Invalid Logo Format. The logo you uploaded is not in a valid SVG format or is not supported by VMC.";
+
                         response.configurationToken = resolved.token;
+
                         return Ok(response);
                     }
                 }
@@ -2201,7 +2238,8 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                     Logo = objModel.Logo,
                     EnableHosting = true,
                     MarkType = objModel.MarkType,
-                    File = objModel.File,
+                    FileBase64 = objModel.FileBase64,
+                    FileName = objModel.FileName,
                     strLogo = strLogo,
                     IsLogoExists = objModel.IsLogoExists,
                     MarkTypeData = new VmcMarkTypeData
@@ -2424,9 +2462,9 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
                 {
                     try
                     {
-                        string ext = string.IsNullOrWhiteSpace(pf.DigicertOrderRequest.VMCCertificateDetail.File?.FileName)
+                        string ext = string.IsNullOrWhiteSpace(pf.DigicertOrderRequest.VMCCertificateDetail.FileName)
                             ? ".svg"
-                            : Path.GetExtension(pf.DigicertOrderRequest.VMCCertificateDetail.File.FileName);
+                            : Path.GetExtension(pf.DigicertOrderRequest.VMCCertificateDetail.FileName);
                         if (string.IsNullOrWhiteSpace(ext))
                             ext = ".svg";
 

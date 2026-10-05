@@ -2944,5 +2944,65 @@ namespace SSL_Configuration_Core_API_2026.Controllers.SSLConfiguration
 
         private static SelectListItemDto ToSelectListItemDto(SelectListItem i) =>
             new SelectListItemDto { Value = i.Value, Text = i.Text, Selected = i.Selected };
+
+        [HttpGet("CountryListNew")]
+        public IActionResult GetCountryList([FromQuery] string? configurationToken = null, [FromQuery] string? pin = null)
+        {
+            var response = new CountryListResponse();
+            try
+            {
+                var resolved = _authenticationService.ResolveDraft(configurationToken, pin);
+                if (!resolved.ok || resolved.request == null || string.IsNullOrEmpty(resolved.token))
+                {
+                    response.IsSuccess = false;
+                    response.Msg = resolved.errorMessage ?? "Session expired.";
+                    return Ok(response);
+                }
+                response.IsSuccess = true;
+                response.configurationToken = resolved.token;
+                response.CountryList = BLGeneral.GetCountryList().Select(ToSelectListItemDto).ToList();
+                
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                LogWriter.LogErrorDetails(ex);
+                response.IsSuccess = false;
+                response.Msg = ex.Message;
+                return Ok(response);
+            }                      
+        }
+        [HttpGet("GetComodoApprovalEmailListNew")]
+        public IActionResult GetComodoApprovalEmailList([FromQuery] string? configurationToken = null, [FromQuery] string? pin = null, [FromQuery] string? domainName = null, [FromQuery] string? approvalEmail = null)
+        {
+            var response = new ComodoApprovalEmailListResponse();
+            try
+            {
+                var resolved = _authenticationService.ResolveDraft(configurationToken, pin);
+                if (!resolved.ok || resolved.request == null || string.IsNullOrEmpty(resolved.token))
+                {
+                    response.IsSuccess = false;
+                    response.Msg = resolved.errorMessage ?? "Session expired.";
+                    return Ok(response);
+                }
+
+                PF_Request pf = resolved.request;
+                EnsureComodoOrder(pf);
+
+                var approvalEmailList = BLGeneral.GetComodoApprovalEmailList(domainName ?? string.Empty, pf.CACredentialDetails?.GetComodoCACredential(), approvalEmail ?? string.Empty);
+
+                response.IsSuccess = true;
+                response.configurationToken = resolved.token;                
+                response.approvalEmailList = approvalEmailList.Select(ToSelectListItemDto).ToList();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                LogWriter.LogErrorDetails(ex);
+                response.IsSuccess = false;
+                response.Msg = ex.Message;
+                return Ok(response);
+            }
+        }
     }
 }

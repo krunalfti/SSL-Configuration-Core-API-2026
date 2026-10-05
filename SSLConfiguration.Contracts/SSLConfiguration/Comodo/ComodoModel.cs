@@ -1,3 +1,4 @@
+using SSLConfiguration.Contracts.SSLConfiguration.Digicert;
 using System;
 using System.Collections.Generic;
 
@@ -380,5 +381,20 @@ namespace SSLConfiguration.Contracts.SSLConfiguration.Comodo
         public string? configurationToken { get; set; }
         public ComodoEVContactInfoDto? verification { get; set; }
         public List<Digicert.SelectListItemDto>? CountryList { get; set; }
+    }
+
+    public class CountryListResponse
+    {
+        public bool IsSuccess { get; set; }
+        public string? Msg { get; set; }
+        public string? configurationToken { get; set; }
+        public List<Digicert.SelectListItemDto>? CountryList { get; set; }
+    }
+    public class ComodoApprovalEmailListResponse
+    {
+        public bool IsSuccess { get; set; }
+        public string? Msg { get; set; }
+        public string? configurationToken { get; set; }
+        public List<SelectListItemDto>? approvalEmailList { get; set; }
     }
 }

@@ -501,9 +501,9 @@ namespace SSLConfiguration.Application
             #endregion
 
             #region MARK INFO (VMC CORE)
-            string ext = string.IsNullOrWhiteSpace(objPFRequest.GlobalSignOrderRequest.VMCCertificateDetail?.File.FileName)
+            string ext = string.IsNullOrWhiteSpace(objPFRequest.GlobalSignOrderRequest.VMCCertificateDetail?.FileName)
                 ? ".svg"
-                : Path.GetExtension(objPFRequest.GlobalSignOrderRequest.VMCCertificateDetail.File.FileName);
+                : Path.GetExtension(objPFRequest.GlobalSignOrderRequest.VMCCertificateDetail.FileName);
             if (string.IsNullOrWhiteSpace(ext))
                 ext = ".svg";
 

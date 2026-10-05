@@ -32,7 +32,8 @@ namespace SSLConfiguration.Application
         public string? MarkType { get; set; }
         public VmcMarkTypeData? MarkTypeData { get; set; }
         public string? DomainName { get; set; }
-        public IFormFile File { get; set; }
+        public string? FileBase64 { get; set; }
+        public string? FileName { get; set; }
         public bool IsLogoExists { get; set; }
         public string? strLogo { get; set; }
     }
