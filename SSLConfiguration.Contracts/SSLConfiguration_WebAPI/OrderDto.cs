@@ -8,7 +8,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SSLConfiguration.Contracts.SSLConfiguration_WebAPI
 {
-    public class SaveStoreOrderDetailRequest : OrderBaseRequest
+    public class ExtendSectigoACMESubscriptionRequest : OrderBaseRequest
     {
         public List<StoreOrderDetail> StoreOrderDetails { get; set; }
     }
@@ -40,9 +40,9 @@ namespace SSLConfiguration.Contracts.SSLConfiguration_WebAPI
         public int? SubscriptionYear { get; set; }
         public string? SpecialNote { get; set; }        
     }
-    public class SaveStoreOrderDetailResponse : OrderBaseResponse
+    public class ExtendSectigoACMESubscriptionResponse : OrderBaseResponse
     {
-        public SaveStoreOrderDetailResponse()
+        public ExtendSectigoACMESubscriptionResponse()
         {
             ConfigurationPinDetails = new Dictionary<int, string>();
         }
@@ -82,5 +82,6 @@ namespace SSLConfiguration.Contracts.SSLConfiguration_WebAPI
         public int StoreOrderId { get; set; }
         public int SSLApiLinkId { get; set; }
         public string Pin { get; set; }
+        public string Message { get; set; }
     }
 }

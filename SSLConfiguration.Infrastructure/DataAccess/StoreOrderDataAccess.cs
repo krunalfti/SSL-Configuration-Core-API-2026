@@ -48,12 +48,25 @@ namespace SSLConfiguration.Infrastructure.DataAccess
             storeOrder.IsUsed = status;
             storeOrder.UpdatedDate = DateTime.Now;
             Update(storeOrder);
-        }       
+        }
         #region Renew Acme Product
+        public static StoreOrder? GetBySSLApiLinkIdAndStoreId(string ApiOrderNo, int StoreId)
+        {
+            using (var dbContext = new SSLConfigurationEntities())
+            {                
+                return dbContext.StoreOrders.Where(g => g.ApiOrderNo == ApiOrderNo && g.StoreId == StoreId).OrderByDescending(g => g.CreatedDate).FirstOrDefault();
+            }
+        }
+        public static AcmeSubcriptonError? GetRetrySectigoAcmeSubscriptionErrorData(SSLConfigurationEntities dbContext, int errorRecordId)
+        {
+            return dbContext.AcmeSubcriptonErrors.FirstOrDefault(x => x.AcmeSubcriptonErrorId == errorRecordId);            
+        }
         public static SaveStoreOrderResponse? RenewAcmeStoreOrder(SSLConfigurationEntities dbContext,int StoreId, string ApiOrderNo, StoreOrderDetail storeOrderDetail)
         {
-            var parameters = new[]
+            try
             {
+                var parameters = new[]
+                {
                 new SqlParameter("@StoreId", StoreId),
                 new SqlParameter("@ApiOrderNo", ApiOrderNo),
 
@@ -94,7 +107,7 @@ namespace SSLConfiguration.Infrastructure.DataAccess
                     (object?)storeOrderDetail.SpecialNote ?? DBNull.Value)
             };
 
-            var result = dbContext.Database.SqlQueryRaw<SaveStoreOrderResponse>(@"EXEC dbo.SaveStoreOrderDetailsForRenew
+                var result = dbContext.Database.SqlQueryRaw<SaveStoreOrderResponse>(@"EXEC dbo.uspExtendSectigoACMESubscription
                 @StoreId,
                 @ApiOrderNo,
                 @SSLApiLinkId,
@@ -118,9 +131,18 @@ namespace SSLConfiguration.Infrastructure.DataAccess
                 @IsStoreMYP,
                 @SubscriptionYear,
                 @SpecialNote",
-                    parameters).AsEnumerable().FirstOrDefault();
+                        parameters).AsEnumerable().FirstOrDefault();
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new SaveStoreOrderResponse
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
         }
         #endregion
     }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SSLConfiguration.Contracts.SSLConfiguration_WebAPI;
@@ -85,10 +86,12 @@ namespace SSLConfiguration.Application
         /// <summary>
         /// Renew Old Acme Order 
         /// </summary>
-        public static SaveStoreOrderDetailResponse SaveStoreOrderDetails(SaveStoreOrderDetailRequest saveStoreOrderDetailRequest)
+        #region Renew Acme Product
+        public static ExtendSectigoACMESubscriptionResponse ExtendSectigoACMESubscription(ExtendSectigoACMESubscriptionRequest extendSectigoACMESubscriptionRequest)
         {
+            string request = "";
             string response = "";
-            SaveStoreOrderDetailResponse saveStoreOrderDetailResponse = new SaveStoreOrderDetailResponse();
+            ExtendSectigoACMESubscriptionResponse extendSectigoACMESubscriptionResponseResponse = new ExtendSectigoACMESubscriptionResponse();
             var sslConfiguratinLinks = new Dictionary<int, string>();
 
             try
@@ -96,63 +99,91 @@ namespace SSLConfiguration.Application
                 using var dbContext = new SSLConfigurationEntities();
                 using var transaction = dbContext.Database.BeginTransaction();
                 //Call Verisgn API to get reponse of Extended certificate order and save the response in StoreOrder table
-                try
-                {
-                    var caCredentialDetails = BLGeneral.GetCACredentials(saveStoreOrderDetailRequest.StoreOrderDetails[0].CredentialCode);
-                    var username = caCredentialDetails?.UserName;
-                    var password = caCredentialDetails?.Password;
-                    
-                    var acmeServerRequest = new VerisignGateway.ACMERenewBaseRequest
-                    {
-                        loginName = username,
-                        loginPassword = password,
-                        action = "EXTENDDOMAINS",
-                        EABID = saveStoreOrderDetailRequest.ApiOrderNo,
-                        QuoteOnly = "Y",
-                        years = "1"
-                    };
-                    var serverResponse = VerisignGateway.AcemeAPIHelper.GetExtendedCertificateReponse(acmeServerRequest);
-                    if (serverResponse.success)
-                    {
-                        response = JsonSerializer.Serialize(serverResponse);                        
-                        #region SP CALL - SaveStoreOrderDetailsForRenew
-                        var storeOrderDetails = saveStoreOrderDetailRequest.StoreOrderDetails[0];
-                        var result = StoreOrderDataAccess.RenewAcmeStoreOrder(dbContext, saveStoreOrderDetailRequest.StoreId, saveStoreOrderDetailRequest.ApiOrderNo, storeOrderDetails);
 
-                        if (result != null && result.Success)
-                        {
-                            int newStoreOrderId = result.StoreOrderId;
-                            string newPin = result.Pin;
-                            
-                            sslConfiguratinLinks.Add(saveStoreOrderDetailRequest.StoreOrderDetails[0].SSLApiLinkId, newPin);
-                            saveStoreOrderDetailResponse.ConfigurationPinDetails = sslConfiguratinLinks;
-                            saveStoreOrderDetailResponse.StatusCode = 0;                            
-                        }
-                        #endregion
+                var caCredentialDetails = BLGeneral.GetCACredentials(extendSectigoACMESubscriptionRequest.StoreOrderDetails[0].CredentialCode);
+                var username = caCredentialDetails?.UserName;
+                var password = caCredentialDetails?.Password;
+
+                var acmeServerRequest = new VerisignGateway.ACMERenewBaseRequest
+                {
+                    loginName = username,
+                    loginPassword = password,
+                    action = "EXTENDDOMAINS",
+                    EABID = extendSectigoACMESubscriptionRequest.ApiOrderNo,
+                    QuoteOnly = "N",
+                    years = "1"
+                };
+                request = "Request Object: " + JsonSerializer.Serialize(acmeServerRequest);
+                LogWriter.LogAcmeAPIRequest(extendSectigoACMESubscriptionRequest.SSLApiLinkId, extendSectigoACMESubscriptionRequest.Pin, "", request, "EXTENDDOMAINS");
+                var serverResponse = VerisignGateway.AcemeAPIHelper.GetExtendedCertificateReponse(acmeServerRequest);
+                var storeOrderDetails = extendSectigoACMESubscriptionRequest.StoreOrderDetails[0];
+                var storeOrder = StoreOrderDataAccess.GetBySSLApiLinkIdAndStoreId(extendSectigoACMESubscriptionRequest.ApiOrderNo, extendSectigoACMESubscriptionRequest.StoreId);
+                var oldStoreOrderId = storeOrder?.StoreOrderId ?? 0;
+                if (serverResponse.success)
+                {
+                    response = "Response Object: " + JsonSerializer.Serialize(serverResponse);
+                    LogWriter.LogAcmeAPIRequest(extendSectigoACMESubscriptionRequest.SSLApiLinkId, extendSectigoACMESubscriptionRequest.Pin, "", response, "EXTENDDOMAINS");
+                    #region SP CALL - SaveStoreOrderDetailsForRenew
+                    var result = StoreOrderDataAccess.RenewAcmeStoreOrder(dbContext, extendSectigoACMESubscriptionRequest.StoreId, extendSectigoACMESubscriptionRequest.ApiOrderNo, storeOrderDetails);
+
+                    if (result != null && result.Success)
+                    {
+                        int newStoreOrderId = result.StoreOrderId;
+                        string newPin = result.Pin;
+
+                        sslConfiguratinLinks.Add(extendSectigoACMESubscriptionRequest.StoreOrderDetails[0].SSLApiLinkId, newPin);
+                        extendSectigoACMESubscriptionResponseResponse.ConfigurationPinDetails = sslConfiguratinLinks;
+                        extendSectigoACMESubscriptionResponseResponse.StatusCode = 0;
+                        transaction.Commit();
                     }
                     else
                     {
-                        string message = "Acme Renew Verising Api Failed.";
-                        response = JsonSerializer.Serialize(serverResponse);
-                        LogWriter.LogAcmeAPIRequest(saveStoreOrderDetailRequest.SSLApiLinkId, "", "", response, message);
+                        transaction.Rollback();
+                        extendSectigoACMESubscriptionResponseResponse.StatusCode = -1;
+                        extendSectigoACMESubscriptionResponseResponse.ErrorDetail.ErrorMessage = "Your subscription was successfully extended, but the update could not be completed. Please contact Admin or Support for assistance.";
+                        #region Enter Response In table 
+                        using var errorDbContext = new SSLConfigurationEntities();
+                        try
+                        {
+                            AcmeSubcriptonError objSectigoAcmeSubcription = new AcmeSubcriptonError()
+                            {
+                                OrderNumber = serverResponse.orderNumber.ToString(),
+                                ExtensionDurationDays = serverResponse.extensionDurationDays,
+                                StoreId = extendSectigoACMESubscriptionRequest.StoreId,
+                                StoreOrderId = oldStoreOrderId,
+                                RequestJson = JsonSerializer.Serialize(storeOrderDetails),
+                                RetryCount = 0,
+                                IsProcessed = false,
+                                CreatedDate = DateTime.UtcNow,
+                                ErrorMessage = result?.Message ?? "Unknown error"
+                            };
+                            errorDbContext.AcmeSubcriptonErrors.Add(objSectigoAcmeSubcription);
+                            errorDbContext.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            var error = ex.InnerException?.InnerException?.Message ?? ex.InnerException?.Message ?? ex.Message;
+                            throw new Exception("SectigoAcmeAfterSubcripton insert failed: " + error, ex);
+                        }
+                        #endregion
+                        return extendSectigoACMESubscriptionResponseResponse;
                     }
+                    #endregion
                 }
-                catch (Exception ex)
+                else
                 {
-                    
-                }                               
-                transaction.Commit();
-                
+                    string message = "Acme Renew Verising Api Failed.";
+                    response = JsonSerializer.Serialize(serverResponse);
+                    LogWriter.LogAcmeAPIRequest(extendSectigoACMESubscriptionRequest.SSLApiLinkId, "", "", response, message);
+                }
             }
             catch (Exception ex)
             {
-                saveStoreOrderDetailResponse.StatusCode = -1;
-                saveStoreOrderDetailResponse.ErrorDetail.ErrorMessage = ex.Message;
-
-                //LogWriter.LogErrorDetails(ex);
+                extendSectigoACMESubscriptionResponseResponse.StatusCode = -1;
+                extendSectigoACMESubscriptionResponseResponse.ErrorDetail.ErrorMessage = ex.Message;
             }
-
-            return saveStoreOrderDetailResponse;
-        }        
+            return extendSectigoACMESubscriptionResponseResponse;
+        }
+        #endregion
     }
 }
