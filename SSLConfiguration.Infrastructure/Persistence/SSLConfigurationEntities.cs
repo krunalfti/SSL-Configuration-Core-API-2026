@@ -39,7 +39,7 @@ namespace SSLConfiguration.Infrastructure.Persistence
         public virtual DbSet<AcmeDomainHistory> AcmeDomainHistories { get; set; }
         public virtual DbSet<SectigoRefundPaymentStatu> SectigoRefundPaymentStatus { get; set; }
 
-        public virtual DbSet<AcmeSubcriptonError> AcmeSubcriptonErrors { get; set; }
+        public virtual DbSet<AcmeSubscriptionError> AcmeSubscriptionErrors { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -180,10 +180,10 @@ namespace SSLConfiguration.Infrastructure.Persistence
                 e.ToTable("Product");
                 e.HasKey(x => x.ProductId);
             });
-            modelBuilder.Entity<AcmeSubcriptonError>(e =>
+            modelBuilder.Entity<AcmeSubscriptionError>(e =>
             {
-                e.ToTable("AcmeSubcriptonError");
-                e.HasKey(x => x.AcmeSubcriptonErrorId);
+                e.ToTable("AcmeSubscriptionError");
+                e.HasKey(x => x.AcmeSubcriptionErrorId);
             });
         }
     }

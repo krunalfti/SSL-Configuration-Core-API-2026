@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SSLConfiguration.Infrastructure.Persistence
 {
-    public class AcmeSubcriptonError
+    public class AcmeSubscriptionError
     {
-        public int AcmeSubcriptonErrorId { get; set; }
+        public int AcmeSubcriptionErrorId { get; set; }
         public string? OrderNumber { get; set; }
         public int ExtensionDurationDays { get; set; }
         public int StoreId { get; set; }

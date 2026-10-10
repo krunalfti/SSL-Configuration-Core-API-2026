@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SSLConfiguration.Contracts.SSLConfiguration_WebAPI;
 using SSLConfiguration.Infrastructure.DataAccess;
 using SSLConfiguration.Infrastructure.Persistence;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Text.Json;
 using System.Transactions;
@@ -116,6 +117,9 @@ namespace SSLConfiguration.Application
                 request = "Request Object: " + JsonSerializer.Serialize(acmeServerRequest);
                 LogWriter.LogAcmeAPIRequest(extendSectigoACMESubscriptionRequest.SSLApiLinkId, extendSectigoACMESubscriptionRequest.Pin, "", request, "EXTENDDOMAINS");
                 var serverResponse = VerisignGateway.AcemeAPIHelper.GetExtendedCertificateReponse(acmeServerRequest);
+                int extensionDurationDays = serverResponse.extensionDurationDays;
+                DateTime startDate = DateTime.UtcNow;
+                DateTime endDate = startDate.AddDays(extensionDurationDays);
                 var storeOrderDetails = extendSectigoACMESubscriptionRequest.StoreOrderDetails[0];
                 var storeOrder = StoreOrderDataAccess.GetBySSLApiLinkIdAndStoreId(extendSectigoACMESubscriptionRequest.ApiOrderNo, extendSectigoACMESubscriptionRequest.StoreId);
                 var oldStoreOrderId = storeOrder?.StoreOrderId ?? 0;
@@ -134,6 +138,29 @@ namespace SSLConfiguration.Application
                         sslConfiguratinLinks.Add(extendSectigoACMESubscriptionRequest.StoreOrderDetails[0].SSLApiLinkId, newPin);
                         extendSectigoACMESubscriptionResponseResponse.ConfigurationPinDetails = sslConfiguratinLinks;
                         extendSectigoACMESubscriptionResponseResponse.StatusCode = 0;
+                        // Save Renewal Order Detail at respective Store Database..
+                        var storeMasterDetail = StoreOrderDataAccess.GetStoreMasterDetailsForRenewal(extendSectigoACMESubscriptionRequest.StoreId);                     
+                        try
+                        {
+                            if (storeMasterDetail != null)
+                            {
+                                var handlerURL = storeMasterDetail.CallBackURL;
+                                handlerURL += "?sslapiLinkId=" + storeOrderDetails.SSLApiLinkId;
+                                handlerURL += "&apiOrderNo=" + extendSectigoACMESubscriptionRequest.ApiOrderNo;
+                                handlerURL += "&StartDate=" + startDate.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                                handlerURL += "&EndDate=" + endDate.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                                handlerURL += "&OrderStatus=INPROCESS";
+                                handlerURL += "&ProductId=" + storeOrderDetails.ProductId;
+                                handlerURL += "&IsAcmeConfig=" + true;
+                                handlerURL += "&pin=" + newPin;
+                                HttpWebRequest callbackRequest = (HttpWebRequest)WebRequest.Create(handlerURL);
+                                HttpWebResponse callbackResponse = (HttpWebResponse)callbackRequest .GetResponse();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogWriter.LogHandlerError(storeMasterDetail.StoreName, storeOrderDetails.SSLApiLinkId, ex.Message);
+                        }
                         transaction.Commit();
                     }
                     else
@@ -145,7 +172,7 @@ namespace SSLConfiguration.Application
                         using var errorDbContext = new SSLConfigurationEntities();
                         try
                         {
-                            AcmeSubcriptonError objSectigoAcmeSubcription = new AcmeSubcriptonError()
+                            AcmeSubscriptionError objSectigoAcmeSubcription = new AcmeSubscriptionError()
                             {
                                 OrderNumber = serverResponse.orderNumber.ToString(),
                                 ExtensionDurationDays = serverResponse.extensionDurationDays,
@@ -157,7 +184,7 @@ namespace SSLConfiguration.Application
                                 CreatedDate = DateTime.UtcNow,
                                 ErrorMessage = result?.Message ?? "Unknown error"
                             };
-                            errorDbContext.AcmeSubcriptonErrors.Add(objSectigoAcmeSubcription);
+                            errorDbContext.AcmeSubscriptionErrors.Add(objSectigoAcmeSubcription);
                             errorDbContext.SaveChanges();
                         }
                         catch (Exception ex)

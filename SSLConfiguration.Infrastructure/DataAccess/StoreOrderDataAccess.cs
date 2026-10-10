@@ -57,9 +57,16 @@ namespace SSLConfiguration.Infrastructure.DataAccess
                 return dbContext.StoreOrders.Where(g => g.ApiOrderNo == ApiOrderNo && g.StoreId == StoreId).OrderByDescending(g => g.CreatedDate).FirstOrDefault();
             }
         }
-        public static AcmeSubcriptonError? GetRetrySectigoAcmeSubscriptionErrorData(SSLConfigurationEntities dbContext, int errorRecordId)
+        public static StoreMaster? GetStoreMasterDetailsForRenewal(int StoreId)
         {
-            return dbContext.AcmeSubcriptonErrors.FirstOrDefault(x => x.AcmeSubcriptonErrorId == errorRecordId);            
+            using (var dbContext = new SSLConfigurationEntities())
+            {
+                return dbContext.StoreMasters.Where(s => s.StoreMasterId == StoreId).FirstOrDefault();
+            }
+        }
+        public static AcmeSubscriptionError? GetRetrySectigoAcmeSubscriptionErrorData(SSLConfigurationEntities dbContext, int errorRecordId)
+        {
+            return dbContext.AcmeSubscriptionErrors.FirstOrDefault(x => x.AcmeSubcriptionErrorId == errorRecordId);            
         }
         public static SaveStoreOrderResponse? RenewAcmeStoreOrder(SSLConfigurationEntities dbContext,int StoreId, string ApiOrderNo, StoreOrderDetail storeOrderDetail)
         {
