@@ -149,7 +149,7 @@ namespace SSLConfiguration.Application
                                 handlerURL += "&apiOrderNo=" + extendSectigoACMESubscriptionRequest.ApiOrderNo;
                                 handlerURL += "&StartDate=" + startDate.ToString("yyyy-MM-ddTHH:mm:ssZ");
                                 handlerURL += "&EndDate=" + endDate.ToString("yyyy-MM-ddTHH:mm:ssZ");
-                                handlerURL += "&OrderStatus=INPROCESS";
+                                handlerURL += "&OrderStatus=InProcess";
                                 handlerURL += "&ProductId=" + storeOrderDetails.ProductId;
                                 handlerURL += "&IsAcmeConfig=" + true;
                                 handlerURL += "&pin=" + newPin;
